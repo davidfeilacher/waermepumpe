@@ -4,7 +4,8 @@ import csv
 import numpy as np
 from scipy.optimize import minimize
 
-Ta_av=[0 for i in range(24)]
+##################################################################################
+
 def temp_year_f(print) :
     
     yeaer_adapt_avg_T=1.2
@@ -30,6 +31,7 @@ def temp_year_f(print) :
         
     return Temperature
         
+ ##################################################################################
         
 def temp_daily(print) :
     
@@ -50,6 +52,8 @@ def temp_daily(print) :
         plt.show()
         
     return Temperature
+
+##################################################################################
 
 def remp_comb (print):
     
@@ -72,6 +76,8 @@ def remp_comb (print):
         plt.show()
     
     return temp_comb
+
+##################################################################################
 
 def read_zamg_data() :
     
@@ -109,14 +115,19 @@ def read_zamg_data() :
     
     return data
 
+##################################################################################
 
 def target_func(x, O, A, P):
     return O + A * np.cos(x + P)
+
+##################################################################################
 
 def error_func(params, x, y):
     O, A, P = params
     y_pred = target_func(x, O, A, P)
     return np.sum((y - y_pred) ** 2)
+
+##################################################################################
 
 def find_cosine_parameters(x, y):
 
@@ -126,23 +137,36 @@ def find_cosine_parameters(x, y):
 
     return O,A,P
 
+##################################################################################
+
 def interpolate_real_data_cos(T7,T14,T19,noCos):
     assert len(T7) == len(T14) and len(T19) == len(T14), "listen müssen gleich lang sein"
 
     T_ip=[]
     assert noCos%2==0, "noCos muss gerade zahl sein"
     
+    #print("len(T7)" + str(len(T7)))
+    
     for i in range(0,len(T7)) :
         x=[]
         y=[]
         for j in range(math.floor(-noCos/2),math.ceil(noCos/2)):
+                     
             if i+j >=0 and i+j <= len(T7)-1:
                 x.append([(7/24+24*j)*(2*math.pi),(14/24+24*j)*(2*math.pi),(19/24+24*j)*(2*math.pi)])
                 y.append([T7[i+j],T14[i+j],T19[i+j]])
-            else :
-                continue    
+                
+            elif i+j <0:                
+                 x.append([(7/24+24*j)*(2*math.pi),(14/24+24*j)*(2*math.pi),(19/24+24*j)*(2*math.pi)])
+                 y.append([T7[0],T14[0],T19[0]])
+                 
+            elif i+j >len(T7)-1:   
+                 x.append([(7/24+24*j)*(2*math.pi),(14/24+24*j)*(2*math.pi),(19/24+24*j)*(2*math.pi)])
+                 y.append([T7[len(T7)-1],T14[len(T7)-1],T19[len(T7)-1]])
+            
             
         if find_cosine_parameters(x, y) == -1:
+            
             continue
         else:
             O, A, P = find_cosine_parameters(x, y)
@@ -152,8 +176,12 @@ def interpolate_real_data_cos(T7,T14,T19,noCos):
         y_24=[ O+ A * math.cos(value + P) for value in x_24]  
        # print(x_24)
         T_ip=T_ip+y_24
-
+       # print("len(i)" + str(i))
+       # print("len(T_ip)" + str(len(T_ip)))
+    
     return T_ip
+
+##################################################################################
 
 def interpolate_real_data_poly(T7,T14,T19):
     assert len(T7) == len(T14) and len(T19) == len(T14), "listen müssen gleich lang sein"
@@ -225,62 +253,3 @@ def interpolate_real_data_poly(T7,T14,T19):
          
     return T_ip 
 
-def COP(Tv,Ta):
-    
-    COP=4
-    
-    return COP
-
-def Tempvorlauf(Ta):
-    #bei 22* => Tvl = 0
-    #bei -10 => Tvl = 65
-    #lineare anpassung
-    #ToDo : Stufenweise anpassen (wie in realität manuell)
-    #BZW haben die COP kurven ja nur für bestimmte Vrltemp ?
-    
-    return 22-(1/2)*Ta
-    
-def uWert_function(x, x0):
-    if x >= x0:
-        return 1
-    else:
-        return 1+((x-x0)**2)/75
-    
-    
-def PowerRequirement(Ta):
-    #energieverbrauch in kW
-    Pww=400 #konst aufheizen des warmwasserspeichers
-    Tww=52#warmwassertemp
-    Pelww=Pww*COP(Tww,Ta)
-    
-    Ta_av.append(Ta)
-    Ta_av.pop(0)
-    Ta_av_av=0
-    Ta_max=0
-    for i in range(len(Ta_av)):
-        Ta_av_av+=Ta_av[i]
-    Ta_av_av /=24
-    Ta_max=max(Ta_av)
-    #u werte von https://www.heizsparer.de/heizung/heiztechnik/heizleistung-berechnen
-    
-    Tinnen=21.5
-    
-    if Ta<=Tinnen and Ta_av_av<= 17 and Ta_max< 23:#wann wird die heizung ausgeschalten ?
-        
-        Aheiz=75
-                    
-        if Ta_av_av<= 15 or Ta_max< 22:
-            Aheiz=150
-   #TIMER EINSTELLUNGN MITEINBEZIEHEN    
-   #im märz passt temp approx nicht     
-        #Achtung mittelwert der temop wurde verwendet
-        uwert=1.4
-        Pheiz= uwert*uWert_function(Ta_av_av,5) * Aheiz * (Tinnen-Ta_av_av)
-        
-    else:
-        Pheiz=0
-
-    Pelheiz=Pheiz*COP(Tempvorlauf(Ta),Ta)
-    
-    
-    return (Pww+Pheiz)/1000,(Pelww+Pelheiz)/1000
