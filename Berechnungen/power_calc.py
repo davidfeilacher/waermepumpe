@@ -21,14 +21,14 @@ def COP(Tv,Ta):
     
     return COP
 
-def Tempvorlauf(Ta):
-    #bei 22* => Tvl = 0
+def Tempvorlauf(Ta_av_day):
+    #Ta=> Tav day verwenden
+    #bei 22* => Tvl = 30
     #bei -10 => Tvl = 65
-    #lineare anpassung
-    #ToDo : Stufenweise anpassen (wie in realität manuell)
-    #BZW haben die COP kurven ja nur für bestimmte Vrltemp ?
+    #lineare anpassung (Regler)
+
     
-    return 22-(1/2)*Ta
+    return 55.85-(32/35)*Ta_av_day
     
 def uWert_function(x, x0):
     if x >= x0:
@@ -43,7 +43,7 @@ def PowerRequirement(Ta,Heiz_on,Area_Setting,Tinnen):
     
     #energieverbrauch in kW
     Pww=400 #konst aufheizen des warmwasserspeichers
-    Tww=52#warmwassertemp
+    Tww=50#warmwassertemp
     
     Pelww=Pww*COP(Tww,Ta)
     
@@ -56,7 +56,7 @@ def PowerRequirement(Ta,Heiz_on,Area_Setting,Tinnen):
         #if Ta_av_av<= 15 or Ta_max< 22:
         Aheiz=Area_Setting
         uwert=2.15
-        
+##BESSERES MODEL NÖTIG        
         # Muss man mit wandfläche berechnen, nicht mit bodenfläche!
         # bei mir dann aussentemp im winter immer um 8 grad herum ?
         # Ausser bei front wänden
@@ -94,7 +94,7 @@ def est_power_for_measured_period(T_ip,Tinnen) :
                         #print(hour)
                         Heiz_on=1
                 
-                Pw,Pel = PowerRequirement(T_ip[hour +tag*24 + days_cumsum*24 ],Heiz_on,data.Area_Setting[monat],Tinnen)
+                Pw,Pel = PowerRequirement(T_ip_day_av,T_ip[hour +tag*24 + days_cumsum*24 ],Heiz_on,data.Area_Setting[monat],Tinnen)
                 Ew.append(Pw)
                 EWärmeSumtemp+=Pw
                 total_sum+=Pw
@@ -117,8 +117,13 @@ def est_power(T_ip,Tinnen):
     Ew=[]
     EwMonth=[0]
     total_sum=0
+    T_ip_day_a=[]
     
     for hour in range(len(T_ip)):
+        
+       # T_ip_day_a.append(T_ip[hour])
+      #  if len(T_ip_day_a)>=24 :
+      #      T_ip_day_a.pop(0)
         
         hour_of_day=hour%24
         Heiz_on=0
@@ -129,7 +134,7 @@ def est_power(T_ip,Tinnen):
                     
                 Heiz_on=1        
         
-        Pw,Pel = PowerRequirement(T_ip[hour],Heiz_on,data.Area_Setting[len(EwMonth)-1],Tinnen)
+        Pw,Pel = PowerRequirement(T_ip_day_av,T_ip[hour],Heiz_on,data.Area_Setting[len(EwMonth)-1],Tinnen)
         
         Ew.append(Pw*1)# leisuntg in kW * 1 h
         EwMonth[-1]+=Pw*1

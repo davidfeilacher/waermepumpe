@@ -8,34 +8,40 @@ import general_util
 import multiprocessing
 import time
 
-T_ip_1_20=[]
-T_ip_1_22=[]
-
 if __name__ == '__main__':
     
     start_time = time.time()
     
-    pool = multiprocessing.Pool(processes=2)
+    pool = multiprocessing.Pool(processes=4)
     
     res1 = pool.apply_async(data_interpol.interpolate_real_data_cos,
                             (data.T7_20, data.T14_20, data.T19_20,2))
     res2 = pool.apply_async(data_interpol.interpolate_real_data_cos,
                             (data.T7_22, data.T14_22, data.T19_22,2))
+    res3 = pool.apply_async(data_interpol.interpolate_real_data_cos,
+                            (data.T7_20, data.T14_20, data.T19_20,4))
+    res4 = pool.apply_async(data_interpol.interpolate_real_data_cos,
+                            (data.T7_22, data.T14_22, data.T19_22,4))
+    
     T_ip_1_20=res1.get()
     T_ip_1_22=res2.get()
- 
-
-
-    #T_ip=utility.interpolate_real_data_poly(T7,T14,T19)
-    #T_ip_2_20=data_interpol.interpolate_real_data_cos(data.T7_20, data.T14_20, data.T19_20,4)
-
+    T_ip_2_20=res3.get()
+    T_ip_2_22=res4.get()
+    T_ip_20=[]
+    T_ip_22=[]
+    
+    for i in range(len(T_ip_1_20)):
+        T_ip_20.append((T_ip_1_20[i]+T_ip_2_20[i])/2)
+    for i in range(len(T_ip_1_22)):
+       T_ip_22.append((T_ip_1_22[i]+T_ip_2_22[i])/2)
+        
     ###############################################################################
     
     pool = multiprocessing.Pool(processes=3)
     
-    res1 = pool.apply_async(power_calc.est_power_for_measured_period,(T_ip_1_20,21.5))
-    res2 = pool.apply_async(power_calc.est_power,(T_ip_1_20,21.5))
-    res3 = pool.apply_async(power_calc.est_power,(T_ip_1_22,21.5))
+    res1 = pool.apply_async(power_calc.est_power_for_measured_period,(T_ip_20,21.5))
+    res2 = pool.apply_async(power_calc.est_power,(T_ip_20,21.5))
+    res3 = pool.apply_async(power_calc.est_power,(T_ip_22,20))
     
     
     [year_sum_meas_per_20,EwMonth_meas_per_20, Ew_meas_per_20] =res1.get()
@@ -62,11 +68,11 @@ if __name__ == '__main__':
     general_util.print_table(EwMonth_22)
 
 
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print("TIME PARALLEL = ",elapsed_time)
     #########################################################################
 
-    #for i in range(len(T_ip_1)):
-    #    T_ip_av.append((T_ip_1[i]+T_ip_2[i])/2)
-    #T_ip_av=T_ip_1
 
     remp_comb_app=data_interpol.remp_comb("off")
     T7_app=[]
@@ -116,6 +122,4 @@ if __name__ == '__main__':
 
     plt.show()
     
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print("TIME PARALLEL = ",elapsed_time)
+    
