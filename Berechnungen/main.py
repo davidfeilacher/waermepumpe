@@ -72,13 +72,21 @@ if __name__ == '__main__':
     elapsed_time = end_time - start_time
     print("TIME PARALLEL = ",elapsed_time)
     #########################################################################
+    print(data.cop)
+    
+    cop_month=[]
+    for month in range(12) :
+        for day in range(data.daysPerMonth_22[month]) :
+            cop_month.append(data.cop[month])
 
+    general_util.plot_cop_over_temp(cop_month,data.Tav_22)
+    #########################################################################
 
     remp_comb_app=data_interpol.remp_comb("off")
     T7_app=[]
     T14_app=[]
     T19_app=[]
-    Tav_app=[]
+    
 
     # for i in range(7,len(remp_comb_app),24) :
     #     T7_app.append(remp_comb_app[i])
@@ -106,13 +114,13 @@ if __name__ == '__main__':
     # plt.plot(range(len(T19_app)), T19_app, label='T19_app')
     # plt.plot(range(len(Tav_app)), Tav_app, label='Tav_app')
 
-    plt.plot(range(len(T_ip_1_20)), T_ip_1_20, label='T_ip_1_20')
-    plt.plot(range(len(T_ip_1_22)), T_ip_1_22, label='T_ip_1_22')
+    #plt.plot(range(len(T_ip_1_20)), T_ip_1_20, label='T_ip_1_20')
+    #plt.plot(range(len(T_ip_1_22)), T_ip_1_22, label='T_ip_1_22')
     #plt.plot(range(len(remp_comb_app)), remp_comb_app, label='remp_comb_app')
 
 
-    plt.plot(range(len(Ew_20)), Ew_20, label='EWärme_20')
-    plt.plot(range(len(Ew_22)), Ew_22, label='EWärme_22')
+    #plt.plot(range(len(Ew_20)), Ew_20, label='EWärme_20')
+    #plt.plot(range(len(Ew_22)), Ew_22, label='EWärme_22')
     plt.xlabel('Stunden')
     plt.ylabel('Temperatur')
     plt.title('...')

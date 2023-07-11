@@ -17,7 +17,7 @@ def temp_year_f(print) :
     
     list_days = range(0, 365*24)
     list_days_inpie=[ (value*((math.pi*2)/(365*24))) for value in list_days]
-
+  
     Temperature=[year_avg_T -(yeaer_adapt_avg_T*(year_max_avg_T-year_min_avg_T)/2)*math.cos(value-year_phase_d*(math.pi*2)/(365*24))  for value in list_days_inpie]
 
     if print=="on":

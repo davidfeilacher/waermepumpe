@@ -38,22 +38,18 @@ def uWert_function(x, x0):
     
 ##################################################################################
 
-def PowerRequirement(Ta,Heiz_on,Area_Setting,Tinnen):
-    #Effekte der effizienz von pufferung modulierung und regelung NICHT beachtet
+def PowerRequirement(Ta_av,Ta,Heiz_on,Area_Setting,Tinnen):
+    
+    #Ta_av wird für warmwasser verwendet weil Pww auch über tag durschn + Puffer
     
     #energieverbrauch in kW
     Pww=400 #konst aufheizen des warmwasserspeichers
     Tww=50#warmwassertemp
     
-    Pelww=Pww*COP(Tww,Ta)
-    
-    #u werte von https://www.heizsparer.de/heizung/heiztechnik/heizleistung-berechnen
-    
+    Pelww=Pww*COP(Tww,Ta_av)
+
     if Heiz_on == 1:
-    #if Ta<=Tinnen and Ta_av_av<= 17 and Ta_max< 23:#wann wird die heizung ausgeschalten ?
-        
-       # Aheiz=75                   
-        #if Ta_av_av<= 15 or Ta_max< 22:
+
         Aheiz=Area_Setting
         uwert=2.15
 ##BESSERES MODEL NÖTIG        
@@ -83,7 +79,8 @@ def est_power_for_measured_period(T_ip,Tinnen) :
     EwMonth=[]
     total_sum=0
     days_cumsum =0;    
-
+    T_av = data.T_av()    
+    
     for monat in range(len(data.E_gemessen)) :
         EWärmeSumtemp=0
         for tag in range(data.E_gemessen[monat][1]-1,data.E_gemessen[monat][2]) :
@@ -94,7 +91,8 @@ def est_power_for_measured_period(T_ip,Tinnen) :
                         #print(hour)
                         Heiz_on=1
                 
-                Pw,Pel = PowerRequirement(T_ip_day_av,T_ip[hour +tag*24 + days_cumsum*24 ],Heiz_on,data.Area_Setting[monat],Tinnen)
+                tip=T_ip[hour +tag*24 + days_cumsum*24 ]
+                Pw,Pel = PowerRequirement(T_av.add_val(tip),tip,Heiz_on,data.Area_Setting[monat],Tinnen)
                 Ew.append(Pw)
                 EWärmeSumtemp+=Pw
                 total_sum+=Pw
@@ -117,7 +115,7 @@ def est_power(T_ip,Tinnen):
     Ew=[]
     EwMonth=[0]
     total_sum=0
-    T_ip_day_a=[]
+    T_av = data.T_av()
     
     for hour in range(len(T_ip)):
         
@@ -132,9 +130,10 @@ def est_power(T_ip,Tinnen):
             if  data.Timer_Setting[len(EwMonth)-1][hour_of_timer][0] <= hour_of_day \
                 and hour_of_day <= data.Timer_Setting[len(EwMonth)-1][hour_of_timer][1] :
                     
-                Heiz_on=1        
+                Heiz_on=1  
+                      
         
-        Pw,Pel = PowerRequirement(T_ip_day_av,T_ip[hour],Heiz_on,data.Area_Setting[len(EwMonth)-1],Tinnen)
+        Pw,Pel = PowerRequirement(T_av.add_val(T_ip[hour]),T_ip[hour],Heiz_on,data.Area_Setting[len(EwMonth)-1],Tinnen)
         
         Ew.append(Pw*1)# leisuntg in kW * 1 h
         EwMonth[-1]+=Pw*1

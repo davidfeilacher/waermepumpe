@@ -1,3 +1,6 @@
+
+import numpy as np
+import math
 daysMeasured_20=[31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 daysPerMonth_22=[31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 daysPerMonth_20=[31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -29,3 +32,31 @@ Timer_Setting=[[[0,23]], [[0,23]], [[0,21]], [[0,21]], [[5,21]], [[5,9],[15,21]]
 Area_Setting=[  150, 150, 117, 90, 70, 50,
                 0, 0, 50, 80, 140, 150]
 
+wandfl_oben=round((12.8+2*7.5)*2.7+3*(3.5*2+5))
+wandfl_unten=round(3.3*(2*5+2*7))
+dT=6000/(wandfl_oben+wandfl_unten)  -20
+print(dT)
+#daten von verbrauchsschätzung von CS3400iAWS
+# kWh pro monat [elektrisch zugeführt,erzeugte wärmeengerie]
+E_wp=[[1472,4334],[1150,3618],[777,2934],[342,1555],[134,570],
+      [51,238],[51,238],[51,238],[103,518],[383,1700],[767,2944],
+      [1316,4085]]
+
+cop=[ round(value[1]/value[0],1) for value in E_wp]
+
+class T_av(object):
+    
+    def __init__(self):
+        self.T_arr= np.zeros(24)
+        self.T_av=0
+        
+    def add_val(self,T):
+        
+       self.T_arr= np.roll(self.T_arr,1)
+       self.T_arr[0]=T
+       self.T_av=np.mean( self.T_av)
+       
+       return T_av
+       
+        
+        
